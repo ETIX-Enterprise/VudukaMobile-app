@@ -7,6 +7,7 @@ import {
   HomeIcon,
   LucideMessageSquareWarning,
   Telescope,
+  TicketCheck,
   
 } from 'lucide-react-native';
 import AgentHome from '@/Pages/AgentHome';
@@ -14,6 +15,7 @@ import Discover from '@/Pages/Discover';
 import DiscoverScreen from '@/Pages/Discoverandincidentpages';
 import { HomeTabParamList } from '@/Pages/types';
 import IncidentScreen from '@/Pages/IncidentScreen';
+import TicketVerificationScreen from '@/Pages/DriverVerify';
 const Tab = createBottomTabNavigator<HomeTabParamList>();
 
 export default function HomeTabs() {
@@ -31,7 +33,7 @@ export default function HomeTabs() {
       }}
     >
       <Tab.Screen
-        name="Home"
+        name="Homescreen"
         component={AgentHome}
         options={{
           tabBarIcon: ({ focused }) => (
@@ -52,6 +54,20 @@ export default function HomeTabs() {
             <TabItem
               icon={Telescope}
               label="Discover"
+              focused={focused}
+            />
+          ),
+        }}
+      />
+
+      <Tab.Screen
+        name="Ticketverify"
+        component={TicketVerificationScreen}
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabItem
+              icon={TicketCheck}
+              label="Verify"
               focused={focused}
             />
           ),

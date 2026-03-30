@@ -9,9 +9,10 @@ export type RootStackParamList = {
 };
 
 export type HomeTabParamList = {
-  Home: undefined;
+  Homescreen: undefined;
   Discover: undefined;
   Incident: undefined;
+  Ticketverify : undefined
 };
 
 export interface Bus {

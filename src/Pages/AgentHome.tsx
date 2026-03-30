@@ -338,7 +338,7 @@ export default function HomeScreen({ navigation }: any) {
         {/* Section header */}
         <View style={s.sectionHeader}>
           <View>
-            <Text className='text-[15px] font-inter font-medium'>Active Routes</Text>
+            <Text className='text-[14px] font-inter-semibold font-medium'>Active Routes</Text>
           </View>
           <TouchableOpacity style={s.seeAllBtn} activeOpacity={0.7}>
             <Text className='text-[#003DD0] font-inter font-medium'>See All</Text>

@@ -127,17 +127,7 @@ const IncidentScreen: React.FC<Props> = ({ navigation }) => {
             </View>
           </View>
 
-          <View style={styles.emergencyBar}>
-            <View style={styles.emergencyIcon}>
-              <Text>🆘</Text>
-            </View>
-            <View style={styles.emergencyText}>
-              <Text style={styles.emergencyTitle}>Emergency? Call 112</Text>
-              <Text style={styles.emergencySub}>
-                For life-threatening situations, contact emergency services immediately
-              </Text>
-            </View>
-          </View>
+
         </LinearGradient>
 
         {/* ── Form Body ── */}
@@ -413,7 +403,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    padding: 12,
+    padding: 10,
     borderRadius: 12,
     borderWidth: 1.5,
     borderColor: Colors.redBorder,
