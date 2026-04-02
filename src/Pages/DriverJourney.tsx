@@ -672,7 +672,7 @@ export default function JourneyManagementScreen({ navigation }: ScreenProps): Re
             </View>
           </Animated.View>
 
-          {/* Tab bar */}
+          {/* Tab bar — lives inside the header */}
           <Animated.View style={[s.tabBar, { opacity: headerOp }]}>
             {(['journey', 'history'] as TabKey[]).map((tab: TabKey) => (
               <TouchableOpacity
@@ -695,15 +695,7 @@ export default function JourneyManagementScreen({ navigation }: ScreenProps): Re
         </SafeAreaView>
       </View>
 
-      {/* ── TAB: JOURNEY ────────────────────────────────────────────────── */}
-      {activeTab === 'journey' && (
-        <ScrollView
-          style={s.scroll}
-          contentContainerStyle={s.scrollContent}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
-          {activeJourney ? (
+                {activeJourney ? (
             <Animated.View style={{ opacity: cardOp, transform: [{ translateY: cardY }] }}>
               <ActiveJourneyCard
                 journey={activeJourney}
@@ -789,6 +781,14 @@ export default function JourneyManagementScreen({ navigation }: ScreenProps): Re
             </Animated.View>
           )}
 
+      {/* ── TAB: JOURNEY ────────────────────────────────────────────────── */}
+      {activeTab === 'journey' && (
+        <ScrollView
+          style={s.scroll}
+          contentContainerStyle={s.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
           {/* Today's recap */}
           {todayHistory.length > 0 && (
             <>
@@ -892,10 +892,11 @@ export default function JourneyManagementScreen({ navigation }: ScreenProps): Re
 
 // ── Active Journey Card Styles ────────────────────────────────────────────────
 const ac = StyleSheet.create({
+  // ↓ KEY CHANGE: negative marginTop pulls card up to overlap the header bottom
   card: {
     backgroundColor: C.white,
     marginHorizontal: 16,
-    marginTop: -44,
+    marginTop: -28,
     borderRadius: 20,
     borderWidth: 1,
     borderColor: C.border,
@@ -1281,7 +1282,10 @@ const ce = StyleSheet.create({
 });
 
 // ── Main Screen Styles ────────────────────────────────────────────────────────
-const HEADER_H: number = Platform.OS === 'ios' ? 200 : 180;
+
+// ↓ KEY CHANGE: taller header gives the tab bar room to breathe inside the
+//   blue block, so the card's negative marginTop can visually climb on top.
+const HEADER_H: number = Platform.OS === 'ios' ? 220 : 200;
 
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: C.bg },
@@ -1368,10 +1372,12 @@ const s = StyleSheet.create({
     fontSize: 10,
     color: C.white,
   },
+
+  // ↓ KEY CHANGE: negative marginTop matches HomeScreen's search card pattern
   startCard: {
     backgroundColor: C.white,
     marginHorizontal: 16,
-    marginTop: -44,
+    marginTop: -28,
     borderRadius: 20,
     padding: 18,
     marginBottom: 20,
@@ -1381,7 +1387,7 @@ const s = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
     shadowRadius: 16,
-    elevation: 4,
+    elevation: 5,
   },
   startCardHeader: {
     flexDirection: 'row',
@@ -1462,7 +1468,8 @@ const s = StyleSheet.create({
     letterSpacing: 0.1,
   },
   scroll: { flex: 1 },
-  scrollContent: { paddingTop: 0 },
+  // ↓ No top padding — card's negative margin handles the overlap
+  scrollContent: { paddingTop: 0, paddingBottom: 16 },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
