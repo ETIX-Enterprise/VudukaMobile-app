@@ -136,7 +136,7 @@ const IncidentScreen: React.FC<Props> = ({ navigation }) => {
           {/* Incident Type */}
           <View style={styles.card}>
             <Text style={styles.cardTitle}>
-              📋 Incident Type <Text style={styles.required}>*</Text>
+              Incident Type <Text style={styles.required}>*</Text>
             </Text>
             <View style={styles.typeGrid}>
               {INCIDENT_TYPES.map(t => (
@@ -149,7 +149,6 @@ const IncidentScreen: React.FC<Props> = ({ navigation }) => {
                   onPress={() => setSelectedType(t.id)}
                   activeOpacity={0.75}
                 >
-                  <Text style={styles.typeChipIcon}>{t.icon}</Text>
                   <Text
                     style={[
                       styles.typeChipLabel,
@@ -165,7 +164,7 @@ const IncidentScreen: React.FC<Props> = ({ navigation }) => {
 
           {/* Bus Plate */}
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>🚌 Bus Plate Number</Text>
+            <Text style={styles.cardTitle}>Bus Plate Number</Text>
             <TextInput
               style={styles.plateInput}
               value={busPlate}
@@ -182,7 +181,7 @@ const IncidentScreen: React.FC<Props> = ({ navigation }) => {
 
           {/* Severity */}
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>⚠️ Severity Level</Text>
+            <Text style={styles.cardTitle}>Severity Level</Text>
             <View style={styles.severityRow}>
               {SEVERITIES.map(s => (
                 <TouchableOpacity
@@ -216,7 +215,7 @@ const IncidentScreen: React.FC<Props> = ({ navigation }) => {
           {/* Description */}
           <View style={styles.card}>
             <Text style={styles.cardTitle}>
-              📝 Description <Text style={styles.required}>*</Text>
+              Description <Text style={styles.required}>*</Text>
             </Text>
             <TextInput
               style={styles.descInput}

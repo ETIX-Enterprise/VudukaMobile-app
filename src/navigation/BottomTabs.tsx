@@ -16,6 +16,7 @@ import DiscoverScreen from '@/Pages/Discoverandincidentpages';
 import { HomeTabParamList } from '@/Pages/types';
 import IncidentScreen from '@/Pages/IncidentScreen';
 import TicketVerificationScreen from '@/Pages/DriverVerify';
+import JourneyManagementScreen from '@/Pages/DriverJourney';
 const Tab = createBottomTabNavigator<HomeTabParamList>();
 
 export default function HomeTabs() {
@@ -62,7 +63,7 @@ export default function HomeTabs() {
 
       <Tab.Screen
         name="Ticketverify"
-        component={TicketVerificationScreen}
+        component={JourneyManagementScreen}
         options={{
           tabBarIcon: ({ focused }) => (
             <TabItem
