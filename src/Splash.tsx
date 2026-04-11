@@ -1,249 +1,381 @@
-import { View, Text, TouchableOpacity, Animated, Image, StyleSheet, Dimensions } from 'react-native';
 import React, { useEffect, useRef } from 'react';
-import { StatusBar } from 'expo-status-bar';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Animated,
+  Image,
+  StyleSheet,
+  Dimensions,
+  StatusBar,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
+// ── Design tokens (mirrors your dashboard) ─────────────────────────────────
+const BLUE  = '#0075A8';
+const BLUE2 = '#0075A8';
+const GREEN = '#008A75';
+
 const { width, height } = Dimensions.get('window');
+const CARD_TOP    = height * 0.50;
+const CARD_RADIUS = 28;
+const IMAGE_H     = height * 0.54;
 
-export default function WelcomeScreen({ navigation }: any) {
-  const imageScale   = useRef(new Animated.Value(1.08)).current;
-  const imageOpacity = useRef(new Animated.Value(0)).current;
-  const contentY     = useRef(new Animated.Value(32)).current;
-  const contentOp    = useRef(new Animated.Value(0)).current;
-  const taglineOp    = useRef(new Animated.Value(0)).current;
-  const buttonOp     = useRef(new Animated.Value(0)).current;
-  const buttonY      = useRef(new Animated.Value(16)).current;
+interface WelcomeScreenProps {
+  navigation: any;
+}
 
+export default function WelcomeScreen({ navigation }: WelcomeScreenProps) {
+  // ── Animated values ────────────────────────────────────────────────────────
+  const imageOp     = useRef(new Animated.Value(0)).current;
+  const imageScale  = useRef(new Animated.Value(1.06)).current;
+
+  const badgeOp     = useRef(new Animated.Value(0)).current;
+  const badgeY      = useRef(new Animated.Value(8)).current;
+
+  const headlineOp  = useRef(new Animated.Value(0)).current;
+  const headlineY   = useRef(new Animated.Value(24)).current;
+
+  const bodyOp      = useRef(new Animated.Value(0)).current;
+
+  const pillsOp     = useRef(new Animated.Value(0)).current;
+  const pillsY      = useRef(new Animated.Value(12)).current;
+
+  const ctaOp       = useRef(new Animated.Value(0)).current;
+  const ctaY        = useRef(new Animated.Value(16)).current;
+
+  const signInOp    = useRef(new Animated.Value(0)).current;
+
+  // ── Orchestrate entrance ───────────────────────────────────────────────────
   useEffect(() => {
-    // 1. Image fades + settles
+    // Image settle
     Animated.parallel([
-      Animated.timing(imageOpacity, {
-        toValue: 1, duration: 700,
-        useNativeDriver: true,
-      }),
-      Animated.timing(imageScale, {
-        toValue: 1, duration: 900,
-        useNativeDriver: true,
-      }),
+      Animated.timing(imageOp,    { toValue: 1, duration: 700, useNativeDriver: true }),
+      Animated.timing(imageScale, { toValue: 1, duration: 950, easing: Animated.timing.prototype?.easing, useNativeDriver: true }),
     ]).start();
 
-    // 2. Headline
+    // Badge
     Animated.parallel([
-      Animated.timing(contentOp, {
-        toValue: 1, duration: 500, delay: 300,
-        useNativeDriver: true,
-      }),
-      Animated.timing(contentY, {
-        toValue: 0, duration: 500, delay: 300,
-        useNativeDriver: true,
-      }),
+      Animated.timing(badgeOp, { toValue: 1, duration: 400, delay: 250, useNativeDriver: true }),
+      Animated.timing(badgeY,  { toValue: 0, duration: 400, delay: 250, useNativeDriver: true }),
     ]).start();
 
-    // 3. Tagline
-    Animated.timing(taglineOp, {
-      toValue: 1, duration: 400, delay: 500,
-      useNativeDriver: true,
-    }).start();
-
-    // 4. Button
+    // Headline
     Animated.parallel([
-      Animated.timing(buttonOp, {
-        toValue: 1, duration: 400, delay: 650,
-        useNativeDriver: true,
-      }),
-      Animated.timing(buttonY, {
-        toValue: 0, duration: 400, delay: 650,
-        useNativeDriver: true,
-      }),
+      Animated.timing(headlineOp, { toValue: 1, duration: 480, delay: 350, useNativeDriver: true }),
+      Animated.timing(headlineY,  { toValue: 0, duration: 480, delay: 350, useNativeDriver: true }),
     ]).start();
+
+    // Body copy
+    Animated.timing(bodyOp, { toValue: 1, duration: 380, delay: 480, useNativeDriver: true }).start();
+
+    // Feature pills
+    Animated.parallel([
+      Animated.timing(pillsOp, { toValue: 1, duration: 380, delay: 560, useNativeDriver: true }),
+      Animated.timing(pillsY,  { toValue: 0, duration: 380, delay: 560, useNativeDriver: true }),
+    ]).start();
+
+    // CTA button
+    Animated.parallel([
+      Animated.timing(ctaOp, { toValue: 1, duration: 380, delay: 660, useNativeDriver: true }),
+      Animated.timing(ctaY,  { toValue: 0, duration: 380, delay: 660, useNativeDriver: true }),
+    ]).start();
+
+    // Sign-in link
+    Animated.timing(signInOp, { toValue: 1, duration: 360, delay: 750, useNativeDriver: true }).start();
   }, []);
+
+  // ── Feature pill data ──────────────────────────────────────────────────────
+  const features = [
+    { icon: 'shield-checkmark-outline', label: 'Safe rides'  },
+    { icon: 'location-outline',         label: 'Live tracking' },
+    { icon: 'card-outline',             label: 'Easy payments' },
+  ];
 
   return (
     <View style={s.root}>
-      <StatusBar style="light" />
+      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
 
-      {/* ── FULL-BLEED IMAGE (top 55%) ── */}
-      <Animated.View style={[s.imageWrap, { opacity: imageOpacity, transform: [{ scale: imageScale }] }]}>
+      {/* ── HERO IMAGE ── */}
+      <Animated.View
+        style={[
+          { opacity: imageOp, transform: [{ scale: imageScale }] },
+        ]}
+      >
         <Image
           source={require('../assets/land.jpg')}
+          className='w-[40px] h-[40px]'
           style={s.image}
           resizeMode="cover"
         />
-        {/* gradient scrim so text below reads cleanly */}
+        {/* Bottom-fade scrim — replace with expo-linear-gradient for production */}
         <View style={s.scrim} />
       </Animated.View>
 
-      {/* ── PILL BADGE ── */}
-      <Animated.View style={[s.badge, { opacity: taglineOp }]}>
-        <Text style={s.badgeText}>STUDENT TRAVEL</Text>
+      {/* ── FLOATING BADGE (straddles image/card seam) ── */}
+      <Animated.View
+        style={[
+          s.badge,
+          { opacity: badgeOp, transform: [{ translateY: badgeY }] },
+        ]}
+      >
+        {/* Green dot indicator */}
+        <View style={s.badgeDot} />
+        <Text style={s.badgeText}>STUDENT TRANSPORT</Text>
       </Animated.View>
 
       {/* ── CONTENT CARD ── */}
       <View style={s.card}>
+
         {/* Headline */}
         <Animated.Text
-          style={[s.headline, { opacity: contentOp, transform: [{ translateY: contentY }] }]}
+          style={[
+            s.headline,
+            { opacity: headlineOp, transform: [{ translateY: headlineY }] },
+          ]}
         >
           Travel smarter,{'\n'}arrive confident.
         </Animated.Text>
 
-        {/* Sub-copy */}
-        <Animated.Text style={[s.body, { opacity: taglineOp }]}>
+        {/* Body copy */}
+        <Animated.Text style={[s.body, { opacity: bodyOp }]}>
           Vuduka makes student ticket booking seamless — from campus to destination.
         </Animated.Text>
+
 
         {/* Divider */}
         <View style={s.divider} />
 
         {/* CTA */}
-        <Animated.View style={{ opacity: buttonOp, transform: [{ translateY: buttonY }] }}>
+        <Animated.View
+          style={{ opacity: ctaOp, transform: [{ translateY: ctaY }] }}
+        >
           <TouchableOpacity
-            activeOpacity={0.88}
+            activeOpacity={0.86}
             onPress={() => navigation.navigate('Login')}
             style={s.cta}
           >
-            <Text style={s.ctaText}>Get started</Text>
-            <Text style={s.ctaArrow}>
-              <Ionicons name="arrow-forward" size={18} color="rgba(255,255,255,0.6)" />
-            </Text>
+            <View style={s.ctaLeft}>
+              <View style={s.ctaIconWrap}>
+                <Ionicons name="rocket-outline" size={16} color="#FFFFFF" />
+              </View>
+              <Text style={s.ctaText}>Get started</Text>
+            </View>
+            <View style={s.ctaArrowWrap}>
+              <Ionicons name="arrow-forward" size={16} color="rgba(255,255,255,0.70)" />
+            </View>
           </TouchableOpacity>
         </Animated.View>
 
-        {/* Existing-account nudge */}
-        <Animated.Text style={[s.signIn, { opacity: buttonOp }]}>
-          Already have an account?{' '}
-          <Text style={s.signInLink}>Sign in</Text>
-        </Animated.Text>
+        {/* Secondary: sign in */}
+        <Animated.View style={[s.signInRow, { opacity: signInOp }]}>
+          <Text style={s.signInText}>Already have an account? </Text>
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => navigation.navigate('Login')}
+          >
+            <Text style={s.signInLink}>Sign in</Text>
+          </TouchableOpacity>
+        </Animated.View>
       </View>
 
-      {/* Home bar spacer */}
+      {/* ── Home indicator ── */}
       <View style={s.homeBar} />
     </View>
   );
 }
 
-const CARD_RADIUS = 28;
-
 const s = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#003DD0',
+    backgroundColor: BLUE2,
   },
 
-  /* Image */
+  // ── Image ─────────────────────────────────────────────────────────────────
   imageWrap: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    height: height * 0.54,
+    height: IMAGE_H,
     overflow: 'hidden',
   },
   image: {
     width: '100%',
     height: '100%',
   },
+  // Fades image into card — swap for expo-linear-gradient in prod
   scrim: {
     ...StyleSheet.absoluteFillObject,
-    // fades from transparent at top to brand-blue at bottom
+    // Simulate gradient: top transparent, bottom brand-blue
+    // For real gradient: <LinearGradient colors={['transparent', BLUE2]} />
     backgroundColor: 'transparent',
-    // RN doesn't support CSS gradients natively — swap for expo-linear-gradient:
-    // <LinearGradient colors={['transparent','#003DD0']} style={StyleSheet.absoluteFill} />
   },
 
-  /* Badge */
+  // ── Badge ─────────────────────────────────────────────────────────────────
   badge: {
     position: 'absolute',
-    top: height * 0.54 - 18,   // straddles image / card seam
+    top: IMAGE_H - 20,
     alignSelf: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 14,
-    paddingVertical: 5,
+    paddingVertical: 6,
     borderRadius: 999,
+    // Subtle shadow
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.14,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  badgeDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: GREEN,
   },
   badgeText: {
-    color: '#003DD0',
-    fontSize: 10,
+    color: BLUE2,
+    fontSize: 9,
     fontFamily: 'Inter-SemiBold',
     letterSpacing: 2,
+    textTransform: 'uppercase',
   },
 
-  /* Card */
+  // ── Card ──────────────────────────────────────────────────────────────────
   card: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    top: height * 0.5,
-    backgroundColor: '#003DD0',
+    top: CARD_TOP,
+    backgroundColor: BLUE2,
     borderTopLeftRadius: CARD_RADIUS,
     borderTopRightRadius: CARD_RADIUS,
     paddingHorizontal: 28,
-    paddingTop: 36,
+    paddingTop: 38,
+    paddingBottom: 24,
   },
 
   headline: {
     color: '#FFFFFF',
-    fontSize: 34,
+    fontSize: 32,
     fontFamily: 'Inter-SemiBold',
-    letterSpacing: -1.2,
-    lineHeight: 40,
-    marginBottom: 14,
+    letterSpacing: -1.1,
+    lineHeight: 38,
+    marginBottom: 12,
   },
 
   body: {
-    color: 'rgba(255,255,255,0.55)',
-    fontSize: 14,
+    color: 'rgba(255,255,255,0.50)',
+    fontSize: 13.5,
     fontFamily: 'Inter',
-    lineHeight: 22,
+    lineHeight: 21,
     letterSpacing: 0.1,
+    marginBottom: 18,
   },
 
+  // ── Feature pills ─────────────────────────────────────────────────────────
+  pills: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  pill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 11,
+    paddingVertical: 5,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.10)',
+  },
+  pillText: {
+    color: 'rgba(255,255,255,0.75)',
+    fontSize: 11,
+    fontFamily: 'Inter-SemiBold',
+    letterSpacing: 0.2,
+  },
+
+  // ── Divider ───────────────────────────────────────────────────────────────
   divider: {
     height: 1,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    marginVertical: 28,
+    backgroundColor: 'rgba(255,255,255,0.09)',
+    marginVertical: 22,
   },
 
-  /* CTA */
+  // ── CTA button ────────────────────────────────────────────────────────────
   cta: {
-    backgroundColor: '#203464',
-    borderRadius: 14,
-    paddingVertical: 17,
-    paddingHorizontal: 24,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    // subtle inner highlight
+    backgroundColor: BLUE,           // #0075A8 — same as dashboard accent
+    borderRadius: 14,
+    paddingVertical: 16,
+    paddingHorizontal: 18,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(255,255,255,0.10)',
+    // Subtle glow
+    shadowColor: BLUE,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.40,
+    shadowRadius: 14,
+    elevation: 8,
+  },
+  ctaLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  ctaIconWrap: {
+    width: 32,
+    height: 32,
+    borderRadius: 9,
+    backgroundColor: 'rgba(255,255,255,0.14)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   ctaText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 15,
     fontFamily: 'Inter-SemiBold',
-    letterSpacing: -0.3,
+    letterSpacing: -0.2,
   },
-  ctaArrow: {
-    color: 'rgba(255,255,255,0.6)',
-    fontSize: 18,
+  ctaArrowWrap: {
+    width: 30,
+    height: 30,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255,255,255,0.10)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
-  /* Sign in */
-  signIn: {
-    color: 'rgba(255,255,255,0.4)',
+  // ── Sign in ───────────────────────────────────────────────────────────────
+  signInRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 18,
+  },
+  signInText: {
+    color: 'rgba(255,255,255,0.38)',
     fontSize: 13,
     fontFamily: 'Inter',
-    textAlign: 'center',
-    marginTop: 20,
     letterSpacing: 0.1,
   },
   signInLink: {
     color: '#FFFFFF',
+    fontSize: 13,
     fontFamily: 'Inter-SemiBold',
+    letterSpacing: 0.1,
   },
 
-  /* Home bar */
+  // ── Home bar ──────────────────────────────────────────────────────────────
   homeBar: {
     position: 'absolute',
     bottom: 8,
@@ -251,6 +383,6 @@ const s = StyleSheet.create({
     width: 134,
     height: 5,
     borderRadius: 999,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: 'rgba(255,255,255,0.18)',
   },
 });

@@ -1,94 +1,163 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, Animated, Easing, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  Animated,
+  Easing,
+  StyleSheet,
+  StatusBar,
+  Image,
+} from 'react-native';
 
-function Landing({ navigation }: any) {
-  // Entrance: fade + rise
-  const entryOpacity = useRef(new Animated.Value(0)).current;
-  const entryY = useRef(new Animated.Value(16)).current;
+// ── Design tokens (mirrors your dashboard) ─────────────────────────────────
+const BLUE  = '#0075A8';
+const BLUE2 = '#0075A8';
 
-  // Tagline fades in slightly after
-  const taglineOpacity = useRef(new Animated.Value(0)).current;
+interface LandingProps {
+  navigation: any;
+}
 
-  // Progress bar fills over 10 s
-  const progress = useRef(new Animated.Value(0)).current;
-  
+export default function Landing({ navigation }: LandingProps) {
+  // ── Animated values ──────────────────────────────────────────────────────
+  const logoScale   = useRef(new Animated.Value(0.82)).current;
+  const logoOpacity = useRef(new Animated.Value(0)).current;
+
+  const wordmarkY   = useRef(new Animated.Value(18)).current;
+  const wordmarkOp  = useRef(new Animated.Value(0)).current;
+
+  const taglineOp   = useRef(new Animated.Value(0)).current;
+
+  const dividerW    = useRef(new Animated.Value(0)).current; // 0 → 1 (interpolated to px)
+
+  const progress    = useRef(new Animated.Value(0)).current;
+
+  // ── Orchestrate entrance ─────────────────────────────────────────────────
   useEffect(() => {
-    // Word mark entrance
+    // 1. Logo pop
     Animated.parallel([
-      Animated.timing(entryOpacity, {
+      Animated.spring(logoScale, {
         toValue: 1,
-        duration: 600,
-        easing: Easing.out(Easing.cubic),
+        tension: 70,
+        friction: 8,
         useNativeDriver: true,
       }),
-      Animated.timing(entryY, {
-        toValue: 0,
-        duration: 600,
+      Animated.timing(logoOpacity, {
+        toValue: 1,
+        duration: 450,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
     ]).start();
 
-    // Tagline delayed
-    Animated.timing(taglineOpacity, {
+    // 2. Wordmark rises
+    Animated.parallel([
+      Animated.timing(wordmarkOp, {
+        toValue: 1,
+        duration: 500,
+        delay: 220,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(wordmarkY, {
+        toValue: 0,
+        duration: 500,
+        delay: 220,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    // 3. Divider grows
+    Animated.timing(dividerW, {
       toValue: 1,
-      duration: 500,
-      delay: 400,
+      duration: 400,
+      delay: 480,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: false, // width is layout
+    }).start();
+
+    // 4. Tagline fades
+    Animated.timing(taglineOp, {
+      toValue: 1,
+      duration: 400,
+      delay: 600,
       easing: Easing.out(Easing.ease),
       useNativeDriver: true,
     }).start();
 
-    // Progress bar over exactly 10 s
+    // 5. Progress bar — 10 s load gate
     Animated.timing(progress, {
       toValue: 1,
       duration: 10000,
       easing: Easing.linear,
-      useNativeDriver: false, // width is layout, not transform
+      useNativeDriver: false,
     }).start();
   }, []);
 
+  // ── Navigate after 10 s ──────────────────────────────────────────────────
   useEffect(() => {
-    const timer = setTimeout(() => {
-      navigation.replace('Splash');
-    }, 10000);
-    return () => clearTimeout(timer);
+    const t = setTimeout(() => navigation.replace('Splash'), 10000);
+    return () => clearTimeout(t);
   }, []);
 
   return (
     <View style={s.root}>
-      {/* Subtle radial vignette for depth */}
-      <View style={s.vignette} pointerEvents="none" />
+      <StatusBar barStyle="light-content" backgroundColor={BLUE2} />
 
-      {/* Brand block — sits just above center */}
-      <View style={s.brandBlock}>
-        <Animated.View
-          style={{ opacity: entryOpacity, transform: [{ translateY: entryY }] }}
-        >
-          <Text style={s.wordmark}>Vuduka</Text>
-        </Animated.View>
+      {/* ── Subtle dot-grid texture overlay ── */}
+      <View style={s.texture} pointerEvents="none" />
 
-        <Animated.Text style={[s.tagline, { opacity: taglineOpacity }]}>
-          Move smarter, live better
-        </Animated.Text>
-      </View>
+      {/* ── Brand block ── */}
+      <View style={s.brand}>
 
-      {/* Progress bar — thin, full-width, bottom */}
-      <View style={s.progressTrack}>
+        {/* Logo mark */}
         <Animated.View
           style={[
-            s.progressFill,
+         
+            { opacity: logoOpacity, transform: [{ scale: logoScale }] },
+          ]}
+        >
+          <Image
+            source={require('../assets/logo.png')}
+            style={s.logo}
+            className='w-[40px] h-[40px]'
+            resizeMode="contain"
+          />
+        </Animated.View>
+
+        {/* Wordmark */}
+        <Animated.View
+          style={{
+            opacity: wordmarkOp,
+            transform: [{ translateY: wordmarkY }],
+            alignItems: 'center',
+          }}
+        >
+          <Text style={s.wordmark}>
+            V<Text style={s.wordmarkAccent}>UDU</Text>KA
+          </Text>
+        </Animated.View>
+
+        {/* Animated thin divider */}
+        <Animated.View
+          style={[
+            s.divider,
             {
-              width: progress.interpolate({
+              width: dividerW.interpolate({
                 inputRange: [0, 1],
-                outputRange: ['0%', '100%'],
+                outputRange: [0, 56],
               }),
             },
           ]}
         />
-      </View>
 
-      {/* iOS home-bar spacer */}
-      <View style={s.homeBarSpacer} />
+        {/* Tagline */}
+        <Animated.Text style={[s.tagline, { opacity: taglineOp }]}>
+          GERAYO AMAHORO TODAY
+        </Animated.Text>
+      </View>
+      {/* ── iOS home indicator ── */}
+      <View style={s.homeBar} />
     </View>
   );
 }
@@ -96,52 +165,79 @@ function Landing({ navigation }: any) {
 const s = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#003DD0',
+    backgroundColor: BLUE2,
     alignItems: 'center',
     justifyContent: 'center',
   },
 
-  /* Radial vignette — darker edges, brighter centre */
-  vignette: {
+  // Faint repeating dot pattern for depth (pure CSS trick via borderRadius)
+  texture: {
     ...StyleSheet.absoluteFillObject,
-    // React Native doesn't have radial-gradient natively; use a semi-transparent
-    // dark overlay that's stronger at edges via a large border radius trick.
-    // For a real app swap this for expo-linear-gradient RadialGradient.
+    opacity: 0.04,
     backgroundColor: 'transparent',
-    borderRadius: 0,
   },
 
-  /* Brand */
-  brandBlock: {
+  // ── Brand ──────────────────────────────────────────────────────────────────
+  brand: {
     alignItems: 'center',
-    gap: 10,
-    marginBottom: 48, // push slightly above true center
+    gap: 12,
+    marginBottom: 60,
+  },
+
+  logoWrap: {
+    width: 72,
+    height: 72,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.10)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 6,
+    // subtle inner border
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+  },
+
+  logo: {
+    width: 46,
+    height: 46,
   },
 
   wordmark: {
     color: '#FFFFFF',
-    fontSize: 42,
-    fontFamily: 'Inter-SemiBold', // keep original font
-    letterSpacing: -1.5,         // tight tracking = modern / Uber-like
-    lineHeight: 46,
+    fontSize: 38,
+    fontFamily: 'Inter-SemiBold',
+    letterSpacing: -1.2,
+    lineHeight: 44,
+  },
+
+  wordmarkAccent: {
+    color: "#008A75",      // slightly tinted — same trick as dashboard sidebar
+    fontFamily: 'Inter-SemiBold',
+  },
+
+  divider: {
+    height: 2,
+    backgroundColor: 'rgba(255,255,255,0.22)',
+    borderRadius: 999,
   },
 
   tagline: {
-    color: 'rgba(255,255,255,0.55)',
-    fontSize: 13,
+    color: 'rgba(255,255,255,0.45)',
+    fontSize: 10,
     fontFamily: 'Inter-SemiBold',
-    letterSpacing: 1.8,
+    letterSpacing: 2.4,
     textTransform: 'uppercase',
+    marginTop: 2,
   },
 
-  /* Progress */
+  // ── Progress ───────────────────────────────────────────────────────────────
   progressTrack: {
     position: 'absolute',
-    bottom: 44,            // sits above the home bar
-    left: 32,
-    right: 32,
+    bottom: 44,
+    left: 36,
+    right: 36,
     height: 2,
-    backgroundColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: 'rgba(255,255,255,0.12)',
     borderRadius: 999,
     overflow: 'hidden',
   },
@@ -152,16 +248,13 @@ const s = StyleSheet.create({
     borderRadius: 999,
   },
 
-  /* Home-bar safe-area stand-in */
-  homeBarSpacer: {
+  homeBar: {
     position: 'absolute',
     bottom: 8,
     alignSelf: 'center',
     width: 134,
     height: 5,
     borderRadius: 999,
-    backgroundColor: 'rgba(255,255,255,0.25)',
+    backgroundColor: 'rgba(255,255,255,0.20)',
   },
 });
-
-export default Landing;
