@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/authContext'; // ← adjust path if needed
+import { useKeyboardHeight } from '../hooks/useKeyboardHeight';
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const C = {
@@ -129,7 +130,7 @@ export default function LoginScreen({ navigation }: any) {
   // ── Shared UI state ────────────────────────────────────────────────────────
   const [error,        setError]        = useState<string | null>(null);
   const [focusedField, setFocusedField] = useState<string | null>(null);
-
+  const keyboardHeight = useKeyboardHeight();
   // ── Animations ─────────────────────────────────────────────────────────────
   const fadeAnim  = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(24)).current;
@@ -233,12 +234,14 @@ function scrollToField(key: string) {
       </Animated.View>
 
       {/* ── White card ── */}
-      <KeyboardAvoidingView
-  style={{ flex: 1 }}
-  behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-  keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 24}
+<ScrollView
+  contentContainerStyle={[
+    { flexGrow: 1 },
+    { paddingBottom: keyboardHeight }, // ← pushes content up above keyboard
+  ]}
+  keyboardShouldPersistTaps="handled"
+  showsVerticalScrollIndicator={false}
 >
-        <ScrollView ref={scrollRef}  contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           <Animated.View style={[s.card, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
             <Animated.View style={{ opacity: stepAnim }}>
 
@@ -361,7 +364,6 @@ function scrollToField(key: string) {
             </Animated.View>
           </Animated.View>
         </ScrollView>
-      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -373,7 +375,7 @@ const s = StyleSheet.create({
   brandRow: { flexDirection: 'row', alignItems: 'center', gap: 14, marginTop: 8 },
   wordmark: { fontFamily: 'Inter_700Bold', fontSize: 24, color: C.white, letterSpacing: -0.8 },
   tagline: { fontFamily: 'Inter_600SemiBold', fontSize: 9, color: 'rgba(255,255,255,0.50)', letterSpacing: 2, marginTop: 2 },
-  card: { flex: 1, backgroundColor: C.white, borderTopLeftRadius: 28, borderTopRightRadius: 28, paddingHorizontal: 28, paddingTop: 34, paddingBottom: 48, minHeight: 520 },
+  card: { backgroundColor: C.white, borderTopLeftRadius: 28, borderTopRightRadius: 28, paddingHorizontal: 28, paddingTop: 34, paddingBottom: 48, minHeight: 520 },
   heading: { fontFamily: 'Inter_700Bold', fontSize: 24, color: C.text, letterSpacing: -0.6, marginBottom: 6 },
   subheading: { fontFamily: 'Inter_400Regular', fontSize: 13.5, color: C.textSub, lineHeight: 21, marginBottom: 24 },
   errorBox: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: C.errorBg, borderWidth: 1, borderColor: C.errorBorder, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10, marginBottom: 18 },

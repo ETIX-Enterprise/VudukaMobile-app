@@ -213,15 +213,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // ── Persist helpers ───────────────────────────────────────────────────────
-  async function persist(user: AuthUser, accessToken: string, refreshToken: string) {
+async function persist(user: AuthUser, accessToken: string, refreshToken: string) {
+  try {
     await Promise.all([
       AsyncStorage.setItem(TOKEN_KEY,   accessToken),
       AsyncStorage.setItem(REFRESH_KEY, refreshToken),
       AsyncStorage.setItem(USER_KEY,    JSON.stringify(user)),
     ]);
-    setState({ user, accessToken, refreshToken, isLoading: false, isInitialized: true });
+  } catch (e) {
+    // Native module not ready — session will work in-memory only
+    console.warn('[persist] AsyncStorage unavailable, falling back to memory:', e);
   }
-
+  // Always update in-memory state regardless of storage success
+  setState({ user, accessToken, refreshToken, isLoading: false, isInitialized: true });
+}
   async function clearSession() {
     await Promise.all([
       AsyncStorage.removeItem(TOKEN_KEY),
@@ -315,63 +320,120 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [doRefresh]);
 
   // ── Auth actions ──────────────────────────────────────────────────────────
-  async function login(
-    email: string,
-    password: string,
-    rememberMe = false,
-  ): Promise<LoginResult> {
-    setState(s => ({ ...s, isLoading: true }));
+// authContext.ts — replace the login function
+
+async function login(
+  email: string,
+  password: string,
+  rememberMe = false,
+): Promise<LoginResult> {
+  setState(s => ({ ...s, isLoading: true }));
+  try {
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ email, password, rememberMe }),
+    });
+
+    // ── Read as text first ─────────────────────────────────────────────────
+    const raw = await res.text();
+    let json: any;
     try {
-      const res = await fetch(`${API_BASE}/auth/login`, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ email, password, rememberMe }),
-      });
-      const json = await res.json();
-
-      if (!res.ok) {
-        setState(s => ({ ...s, isLoading: false }));
-        return { ok: false, error: json?.message ?? 'Invalid credentials.' };
-      }
-
-      const { data } = json;
-
-      if (data.otpRequired) {
-        setState(s => ({ ...s, isLoading: false }));
-        return { ok: true, otpRequired: true, email: data.email };
-      }
-
-      await persist(data.user, data.accessToken, data.refreshToken);
-      return { ok: true };
+      json = JSON.parse(raw);
     } catch {
       setState(s => ({ ...s, isLoading: false }));
-      return { ok: false, error: 'Unable to reach the server. Check your connection.' };
+      return { ok: false, error: `Server returned an unreadable response (${res.status}).` };
     }
+
+    if (!res.ok) {
+      setState(s => ({ ...s, isLoading: false }));
+      return { ok: false, error: json?.message ?? `Login failed (${res.status}).` };
+    }
+
+    // ── Defensive unwrap ───────────────────────────────────────────────────
+    const payload = json?.data ?? json;
+
+    if (payload?.otpRequired) {
+      setState(s => ({ ...s, isLoading: false }));
+      return { ok: true, otpRequired: true, email: payload.email ?? email };
+    }
+
+    const accessToken  = payload?.accessToken  ?? payload?.access_token;
+    const refreshToken = payload?.refreshToken ?? payload?.refresh_token;
+    const user         = payload?.user;
+
+    if (!accessToken || !user) {
+      console.warn(
+        '[login] Missing accessToken or user.\nFull response:\n',
+        JSON.stringify(json, null, 2),
+      );
+      setState(s => ({ ...s, isLoading: false }));
+      return { ok: false, error: 'Unexpected server response. Please try again.' };
+    }
+
+    await persist(user, accessToken, refreshToken ?? '');
+    return { ok: true };
+
+  } catch (err) {
+    console.error('[login] Network error:', err);
+    setState(s => ({ ...s, isLoading: false }));
+    return { ok: false, error: 'Unable to reach the server. Check your connection.' };
   }
+}
 
-  async function verifyOtp(email: string, otp: string): Promise<LoginResult> {
-    setState(s => ({ ...s, isLoading: true }));
+// authContext.ts — replace the verifyOtp function
+
+async function verifyOtp(email: string, otp: string): Promise<LoginResult> {
+  setState(s => ({ ...s, isLoading: true }));
+  try {
+    const res = await fetch(`${API_BASE}/auth/verify-otp`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ email, otp }),
+    });
+
+    // ── Read as text first so a non-JSON body never throws ────────────────
+    const raw = await res.text();
+    let json: any;
     try {
-      const res = await fetch(`${API_BASE}/auth/verify-otp`, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ email, otp }),
-      });
-      const json = await res.json();
-
-      if (!res.ok) {
-        setState(s => ({ ...s, isLoading: false }));
-        return { ok: false, error: json?.message ?? 'Invalid OTP.' };
-      }
-
-      const { data } = json;
-      await persist(data.user, data.accessToken, data.refreshToken);
-      return { ok: true };
+      json = JSON.parse(raw);
     } catch {
       setState(s => ({ ...s, isLoading: false }));
-      return { ok: false, error: 'Unable to reach the server.' };
+      return { ok: false, error: `Server returned an unreadable response (${res.status}).` };
     }
+
+    if (!res.ok) {
+      setState(s => ({ ...s, isLoading: false }));
+      return { ok: false, error: json?.message ?? `Verification failed (${res.status}).` };
+    }
+
+    // ── Defensive unwrap — handle { data: {...} } OR bare {...} ───────────
+    const payload = json?.data ?? json;
+
+    const accessToken  = payload?.accessToken  ?? payload?.access_token;
+    const refreshToken = payload?.refreshToken ?? payload?.refresh_token;
+    const user         = payload?.user;
+
+    if (!accessToken || !user) {
+      // Log exact shape so you can see what field names your backend uses
+      console.warn(
+        '[verifyOtp] Missing accessToken or user.\nFull response:\n',
+        JSON.stringify(json, null, 2),
+      );
+      setState(s => ({ ...s, isLoading: false }));
+      return { ok: false, error: 'Login verified but session data was incomplete. Please try again.' };
+    }
+
+    await persist(user, accessToken, refreshToken ?? '');
+    return { ok: true };
+
+  } catch (err) {
+    // Only real network failures (no internet, DNS, timeout) reach here
+    console.error('[verifyOtp] Network error:', err);
+    setState(s => ({ ...s, isLoading: false }));
+    return { ok: false, error: 'Unable to reach the server. Check your connection.' };
   }
+}
 
   async function logout() {
     const token = stateRef.current.accessToken;

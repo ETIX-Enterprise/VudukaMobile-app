@@ -119,8 +119,8 @@ export default function Landing({ navigation }: LandingProps) {
         >
           <Image
             source={require('../assets/logo.png')}
-            style={s.logo}
-            className='w-[40px] h-[40px]'
+ 
+            className='w-[100px] h-[100px]'
             resizeMode="contain"
           />
         </Animated.View>
