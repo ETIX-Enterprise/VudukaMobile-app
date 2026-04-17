@@ -317,7 +317,7 @@ const s = StyleSheet.create({
   backBtn:      { width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center' },
   wordmark:     { fontFamily: 'Inter_700Bold', fontSize: 24, color: C.white, letterSpacing: -0.8 },
   tagline:      { fontFamily: 'Inter_600SemiBold', fontSize: 9, color: 'rgba(255,255,255,0.50)', letterSpacing: 2, marginTop: 2 },
-  card:         { backgroundColor: C.white, borderTopLeftRadius: 28, borderTopRightRadius: 28, paddingHorizontal: 28, paddingTop: 34, paddingBottom: 48, minHeight: 520 },
+  card:         { backgroundColor: C.white, borderTopLeftRadius: 28, borderTopRightRadius: 28, paddingHorizontal: 28, paddingTop: 34, paddingBottom: 48, minHeight: 700 },
   iconWrap:     { width: 60, height: 60, borderRadius: 18, backgroundColor: '#EEF3FF', alignItems: 'center', justifyContent: 'center', marginBottom: 16, borderWidth: 1, borderColor: '#D6E0FF' },
   heading:      { fontFamily: 'Inter_700Bold', fontSize: 24, color: C.text, letterSpacing: -0.6, marginBottom: 6 },
   subheading:   { fontFamily: 'Inter_400Regular', fontSize: 13.5, color: C.textSub, lineHeight: 21, marginBottom: 24 },

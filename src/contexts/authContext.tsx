@@ -9,7 +9,7 @@ import React, {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ── Config ────────────────────────────────────────────────────────────────────
-const API_BASE = 'http://192.168.0.166:5000/api'; // ← update to your backend URL
+const API_BASE = 'http://192.168.0.166:5000/api'; 
 
 // ── Role constants ────────────────────────────────────────────────────────────
 export const UserRole = {
